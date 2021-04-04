@@ -6,8 +6,9 @@ This file creates your application.
 """
 
 from app import app
-from flask import render_template, request
-
+from flask import render_template, request,jsonify
+from app.forms import UploadForm
+import os
 ###
 # Routing for your application.
 ###
@@ -16,6 +17,9 @@ from flask import render_template, request
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page
 # application.
+
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
@@ -29,8 +33,36 @@ def index(path):
     return render_template('index.html')
 
 
+
+@app.route('/api/upload',methods=['POST'])
+def upload():
+    form=UploadForm()
+    if request.method == 'POST' :
+        if form.validate_on_submit():
+             description=form.description.data
+             image = form.photo.data
+             filename = secure_filename(image.filename)
+             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+             p=dict()
+             p["message"]="File Upload Successful"
+             p["filename"]=filename
+             p["description"]=description
+             resp = jsonify(p)
+        else:
+            return form_errors(form)
+    return render_template('uploadform.html',form=form) 
+        
+
+
+
+
+           
+    
 # Here we define a function to collect form errors from Flask-WTF
 # which we can later use
+
+
+
 def form_errors(form):
     error_messages = []
     """Collects form errors"""

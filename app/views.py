@@ -7,6 +7,8 @@ This file creates your application.
 
 from app import app
 from flask import render_template, request,jsonify
+from werkzeug.utils import secure_filename
+
 from app.forms import UploadForm
 import os
 ###
@@ -43,14 +45,19 @@ def upload():
              image = form.photo.data
              filename = secure_filename(image.filename)
              image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-             p=dict()
-             p["message"]="File Upload Successful"
-             p["filename"]=filename
-             p["description"]=description
-             resp = jsonify(p)
+             p={
+                 "message":"File Upload Successful",
+                 "filename":filename,
+                 "description":description
+             }
+             return jsonify(p)
         else:
-            return form_errors(form)
-    return render_template('uploadform.html',form=form) 
+            response = {
+                "errors": form_errors(form)
+            }
+            return  jsonify(response)
+
+            #return jsonify(form_errors(form)
         
 
 

@@ -1,5 +1,3 @@
-/* Add your Application JavaScript */
-// Instantiate our main Vue Instance
 const app = Vue.createApp({
     data() {
         return {
@@ -22,11 +20,15 @@ app.component('app-header', {
           <li class="nav-item active">
             <router-link class="nav-link" to="/">Home <span class="sr-only">(current)</span></router-link>
           </li>
+          <li class="nav-item active">
+           <router-link to="/upload" class="nav-link">Upload</router-link>
+          </li>
         </ul>
       </div>
     </nav>
     `
 });
+
 
 app.component('app-footer', {
     name: 'AppFooter',
@@ -54,9 +56,77 @@ const Home = {
     `,
     data() {
         return {}
-    }
+    }   
 };
 
+
+const uploadForm ={
+    name: 'upload-form',
+    template: `
+    <div class="form-container">
+    <div class="alert alert-success " v-if="status === 'success'" >File Upload Successful</div>
+    <div class="alert alert-danger"  v-if="status === 'danger'">
+    <ul>
+    <li v-for="error in erros" class=""> {{error}} </li>
+    </ul>
+    </div>
+    </div>
+        <form method="post" enctype="multipart/form-data" @submit.prevent="uploadPhoto" id="uploadForm">
+            <div class="form-group">
+                <label class="imgup" for="description">Photo</label>
+                <textarea  id="description" name="description" class="form-control"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="imgup" for="photo">Photo</label>
+                <input type="file" class="form-control" id="photo" name="photo" >
+            </div>
+            <button  type="submit" name="submit" id="up" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    
+    `,
+    data(){
+        return {
+            erros: [],
+            status: ''
+            }
+    },
+    methods:{
+        uploadPhoto: function() {
+            let self = this;
+            let uploadForm = document.getElementById('uploadForm');
+            let form_data = new FormData(uploadForm);
+            fetch("/api/upload", {
+                method: 'POST',
+                body: form_data,
+                headers: {
+                'X-CSRFToken': token
+                },
+                credentials: 'same-origin'
+                }).then(function (response) {
+                    return response.json();
+                    })
+                    .then(function (jsonResponse) {
+                    // display a success/error messagemessage
+                    if(jsonResponse.hasOwnProperty('message')){
+                        self.status='success';
+                    }else{
+                        self.status='danger';
+                        self.erros=jsonResponse.errors;
+
+                    }
+                    console.log(jsonResponse);
+                    })
+                    .catch(function (error) {
+                    self.status='danger';
+                    console.error(error);
+                    self.erros = error;
+
+                    });
+        }
+
+    }
+}
 const NotFound = {
     name: 'NotFound',
     template: `
@@ -72,6 +142,8 @@ const NotFound = {
 // Define Routes
 const routes = [
     { path: "/", component: Home },
+    { path: "/upload", component: uploadForm },
+
     // Put other routes here
 
     // This is a catch all route in case none of the above matches

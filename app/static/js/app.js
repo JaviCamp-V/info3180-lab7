@@ -73,7 +73,7 @@ const uploadForm ={
     </div>
         <form method="post" enctype="multipart/form-data" @submit.prevent="uploadPhoto" id="uploadForm">
             <div class="form-group">
-                <label class="imgup" for="description">Photo</label>
+                <label class="imgup" for="description">Desscription</label>
                 <textarea  id="description" name="description" class="form-control"></textarea>
             </div>
             <div class="form-group">
